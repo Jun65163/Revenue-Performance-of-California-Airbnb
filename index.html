@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<header>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <style>
+        table {
+            width: 100%;
+            height: 100vh;
+        }
+
+        tr {
+            width: 50%;
+            height: 50vh;
+        }
+
+        td {
+            width: 50%;
+            height: 50%;
+        }
+
+        .revenue_vsOccupancyScatter-container {
+            width: 100%;
+            height: 400px;
+            overflow: visible;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .chartHeader {
+            font-family: Arial;
+            font-size: 16px;
+            line-height: 1;
+            text-align: center;
+            background-color: rgb(225, 255, 255);
+        }
+
+        .hostTypeDropdownContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            background: white;
+            padding: 5px 10px;
+            border-bottom-right-radius: 5px;
+        }
+
+        .slider-container {
+            width: 25vw;
+            margin: 0;
+            text-align: left;
+            position: relative;
+            padding: 0;
+        }
+
+        #monthSlider {
+            width: 100%;
+            margin-bottom: 0;
+            box-sizing: border-box;
+        }
+
+        .slider-ticks {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin: 0;
+            position: relative;
+        }
+
+        .tick {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tick-line {
+            width: 1px;
+            height: 3px;
+            margin-top: 1%;
+            background-color: black;
+        }
+
+        .tick-label {
+            font-size: 12px;
+            margin-top: 2px;
+            white-space: nowrap;
+            text-align: center;
+        }
+    </style>
+</header>
+
+<body style="font-size: 0.9em; font-family: Arial;">
+    <div class="hostTypeDropdownContainer">
+        Host Type: <select id="hostTypeSelect"></select>
+        <button onclick="gotoNewPage()">Occupancy and Revenue</button>
+    </div>
+
+    <h2 style="line-height: 1.15; text-align: center; background-color: rgb(200, 255, 234);">
+        California Airbnb Sales 2019 (Bookings and Revenue)
+    </h2>
+    <div style="display: flex; height: 100vh; margin-top: -10px;">
+        <!-- LEFT COL -->
+        <div style="flex: 1; display: flex; flex-direction: column;">
+            <!-- Revenue by Cities -->
+            <div style="flex: 1; display: flex; flex-direction: column;">
+                <div class="chartHeader" style="padding: 15px; font-weight: bold;">Revenue by Cities</div>
+                <svg class="revenue_treemap" style="flex: 1;"></svg>
+            </div>
+
+            <!-- Revenue Growth Over Time -->
+            <div style="flex: 1; display: flex; flex-direction: column; padding-top: 2px;">
+                <div class="chartHeader" style="padding: 15px; font-weight: bold;">Revenue Growth Overtime</div>
+
+                <div class="slider-container" style="padding: 0 15px;">
+                    <label for="monthSlider" style="margin-right: 10px;">Month:</label>
+                    <input type="range" id="monthSlider" min="0" max="10" value="0" step="1" />
+
+                    <!-- Month slider ticks -->
+                    <div class="slider-ticks">
+                        <div class="tick">
+                            <div class="tick-line"></div>
+                            <div class="tick-label">Feb</div>
+                        </div>
+                        <div class="tick">
+                            <div class="tick-line"></div>
+                            <div class="tick-label">Mar</div>
+                        </div>
+                        <div class="tick">
+                            <div class="tick-line"></div>
+                            <div class="tick-label">Apr</div>
+                        </div>
+                        <div class="tick">
+                            <div class="tick-line"></div>
+                            <div class="tick-label">May</div>
+                        </div>
+                        <div class="tick">
+                            <div class="tick-line"></div>
+                            <div class="tick-label">Jun</div>
+                        </div>
+                        <div class="tick">
+                            <div class="tick-line"></div>
+                            <div class="tick-label">Jul</div>
+                        </div>
+                        <div class="tick">
+                            <div class="tick-line"></div>
+                            <div class="tick-label">Aug</div>
+                        </div>
+                        <div class="tick">
+                            <div class="tick-line"></div>
+                            <div class="tick-label">Sep</div>
+                        </div>
+                        <div class="tick">
+                            <div class="tick-line"></div>
+                            <div class="tick-label">Oct</div>
+                        </div>
+                        <div class="tick">
+                            <div class="tick-line"></div>
+                            <div class="tick-label">Nov</div>
+                        </div>
+                        <div class="tick">
+                            <div class="tick-line"></div>
+                            <div class="tick-label">Dec</div>
+                        </div>
+                    </div>
+                </div>
+
+                <svg class="booking_geoMap" style="flex: 1;"></svg>
+            </div>
+        </div>
+
+        <!-- RIGHT COL -->
+        <div style="flex: 1; display: flex; flex-direction: column;">
+            <!-- Number of Bookings by Cities -->
+            <div style="flex: 1; display: flex; flex-direction: column; padding-left: 10px;">
+                <div class="chartHeader" style="padding: 15px; font-weight: bold;">Number of Bookings by Cities</div>
+                <svg class="booking_stcakedBar" style="flex: 1;"></svg>
+            </div>
+
+            <!-- Revenue by Host Type -->
+            <div style="flex: 1; display: flex; flex-direction: column; padding-left: 10px;padding-top: 2px;">
+                <div class="chartHeader" style="padding: 15px; font-weight: bold;">Revenue by Host Type</div>
+                <svg class="revenue_avgBar" style="flex: 1;"></svg>
+            </div>
+
+            <!-- Number of Guests Over Time -->
+            <div style="flex: 1; display: flex; flex-direction: column; padding-left: 10px;padding-top: 2px;">
+                <div class="chartHeader" style="padding: 15px; font-weight: bold;">Number of Guests Overtime</div>
+                <svg class="booking_waterfall" style="flex: 1;"></svg>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        /// GET AND PREPROCESS DATA
+        // all chart codes must be able to import like this in html
+        import { loadData } from './dataset_processing.js';
+        import { bookingWaterfallChart } from './booking_waterfall.js';
+        import { bookingGeoMap } from './booking_geoMap.js';
+        import { bookingStackedBar } from './booking_stackedBar.js';
+        import { revenueTreemap } from './revenue_treemap.js';
+        import { avgRevBar } from './revenue_avgBar.js';
+
+        var data = await loadData(false);
+        var data_geo = await loadData(true);
+
+        console.log(data[1]);
+        console.log(data_geo[1]);
+        console.log(data_geo.filter(d => d.unified_id === "AIR14124182"));
+
+        // Initial selection/drilldown
+        let selected_month = "Feb";
+        let selected_hostType = "All";
+
+        /// ANIMATION CONTROL ///
+        // Get unique host types
+        const hostTypes = Array.from(new Set(data.map(d => d.host_type))).sort();
+        hostTypes.unshift("All"); // Add "All" option at the top
+
+        // Put all host types into dropdown
+        const hostTypeSelector = document.getElementById("hostTypeSelect");
+        hostTypes.forEach(type => {
+            const option = document.createElement("option");
+            option.value = type;
+            option.textContent = type;
+            hostTypeSelector.appendChild(option);
+        });
+
+        // Set default host type to session storage or "All" if no session storage
+        const savedHostType = sessionStorage.getItem("hostType");
+        if (savedHostType && hostTypes.includes(savedHostType)) {
+            hostTypeSelector.value = savedHostType;
+            selected_hostType = savedHostType;
+        } else {
+            hostTypeSelector.value = "All";
+        }
+
+        // Store host type before going to next dashboard
+        window.gotoNewPage = function () {
+            const selectedHostType = document.getElementById("hostTypeSelect").value;
+            sessionStorage.setItem("hostType", selectedHostType);
+            window.location.href = 'occupancy_dashboard.html';
+        };
+
+
+        const monthSlider = document.getElementById("monthSlider");
+        const monthNames = ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        // Function to filter data and render chart
+        function renderChartByHostType(selected_hostType, selected_month) {
+            const filteredData = selected_hostType === "All"
+                ? data
+                : data.filter(d => d.host_type === selected_hostType);
+
+            const filteredGeoData = selected_hostType === "All"
+                ? data_geo
+                : data_geo.filter(d => d.host_type === selected_hostType);
+
+            // Draw updated charts
+            bookingWaterfallChart({ data: filteredGeoData, className: ".booking_waterfall" });
+            bookingStackedBar({ data: filteredGeoData, className: ".booking_stcakedBar" });
+            bookingGeoMap({ data: filteredGeoData, className: ".booking_geoMap", monthSelected: selected_month });
+
+            revenueTreemap({ rawData: filteredGeoData, className: ".revenue_treemap" });
+            avgRevBar({ data: filteredGeoData, className: ".revenue_avgBar" });
+        }
+
+        function renderChartByMonth(selected_hostType, selected_month) {
+            const filteredGeoData = selected_hostType === "All"
+                ? data_geo
+                : data_geo.filter(d => d.host_type === selected_hostType);
+
+            bookingGeoMap({ data: filteredGeoData, className: ".booking_geoMap", monthSelected: selected_month });
+        }
+
+
+        // Initial render
+        if (savedHostType && hostTypes.includes(savedHostType)) {
+            renderChartByHostType(selected_hostType, selected_month);
+        }
+        else {
+            bookingWaterfallChart({ data: data_geo, className: ".booking_waterfall" });
+            bookingStackedBar({ data: data_geo, className: ".booking_stcakedBar" });
+            bookingGeoMap({ data: data_geo, className: ".booking_geoMap", monthSelected: selected_month });
+
+            revenueTreemap({ rawData: data_geo, className: ".revenue_treemap" });
+            avgRevBar({ data: data_geo, className: ".revenue_avgBar" });
+        }
+
+        // Re-render when host type dropdown change
+        hostTypeSelector.addEventListener("change", () => {
+            selected_hostType = hostTypeSelector.value;
+            renderChartByHostType(selected_hostType, selected_month);
+        });
+
+        // Re-render when month slider change
+        monthSlider.addEventListener("input", () => {
+            selected_month = monthNames[monthSlider.value];
+            renderChartByMonth(selected_hostType, selected_month);
+        });
+    </script>
+</body>

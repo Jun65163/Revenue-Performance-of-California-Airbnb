@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<header>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <style>
+        table {
+            width: 100%;
+            height: 100vh;
+        }
+
+        tr {
+            width: 50%;
+            height: 50vh;
+        }
+
+        td {
+            width: 50%;
+            height: 50%;
+        }
+
+        .revenue_vsOccupancyScatter-container {
+            width: 100%;
+            height: 400px;
+            overflow: visible;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .chartHeader {
+            font-family: Arial;
+            font-size: 16px;
+            line-height: 1;
+            text-align: center;
+            background-color: rgb(225, 255, 255);
+        }
+
+        .hostTypeDropdownContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            background: white;
+            padding: 5px 10px;
+            border-bottom-right-radius: 5px;
+        }
+
+        .slider-container {
+            width: 25vw;
+            margin: 0;
+            text-align: left;
+            position: relative;
+            padding: 0;
+        }
+
+        #monthSlider {
+            width: 100%;
+            margin-bottom: 0;
+            box-sizing: border-box;
+        }
+
+        .slider-ticks {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin: 0;
+            position: relative;
+        }
+
+        .tick {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tick-line {
+            width: 1px;
+            height: 3px;
+            margin-top: 1%;
+            background-color: black;
+        }
+
+        .tick-label {
+            font-size: 12px;
+            margin-top: 2px;
+            white-space: nowrap;
+            text-align: center;
+        }
+    </style>
+</header>
+
+<body style="font-size: 0.9em; font-family: Arial;">
+    <div class="hostTypeDropdownContainer">
+        Host Type: <select id="hostTypeSelect"></select>
+        <button onclick="gotoNewPage()">Bookings and Revenue</button>
+    </div>
+
+    <h2 style="line-height: 1.15; text-align: center; background-color: rgb(200, 255, 234);">
+        California Airbnb Sales 2019 (Occupancy and Revenue)
+    </h2>
+    <div style="display: flex; flex-direction: column; height: 100vh; margin-top: -10px;">
+        <!-- Row 1 -->
+        <!-- Occupancy Bubble -->
+        <div style="flex: 1; display: flex; flex-direction: column;">
+            <div class="chartHeader" style="padding: 15px; font-weight: bold;">Occupancy vs Nightly Rate Overtime</div>
+
+            <div class="slider-container" style="padding: 0 15px;">
+                <label for="monthSlider" style="margin-right: 10px;">Month:</label>
+                <input type="range" id="monthSlider" min="0" max="11" value="0" step="1" />
+
+                <!-- Month slider ticks -->
+                <div class="slider-ticks">
+                    <div class="tick">
+                        <div class="tick-line"></div>
+                        <div class="tick-label">Jan</div>
+                    </div>
+                    <div class="tick">
+                        <div class="tick-line"></div>
+                        <div class="tick-label">Feb</div>
+                    </div>
+                    <div class="tick">
+                        <div class="tick-line"></div>
+                        <div class="tick-label">Mar</div>
+                    </div>
+                    <div class="tick">
+                        <div class="tick-line"></div>
+                        <div class="tick-label">Apr</div>
+                    </div>
+                    <div class="tick">
+                        <div class="tick-line"></div>
+                        <div class="tick-label">May</div>
+                    </div>
+                    <div class="tick">
+                        <div class="tick-line"></div>
+                        <div class="tick-label">Jun</div>
+                    </div>
+                    <div class="tick">
+                        <div class="tick-line"></div>
+                        <div class="tick-label">Jul</div>
+                    </div>
+                    <div class="tick">
+                        <div class="tick-line"></div>
+                        <div class="tick-label">Aug</div>
+                    </div>
+                    <div class="tick">
+                        <div class="tick-line"></div>
+                        <div class="tick-label">Sep</div>
+                    </div>
+                    <div class="tick">
+                        <div class="tick-line"></div>
+                        <div class="tick-label">Oct</div>
+                    </div>
+                    <div class="tick">
+                        <div class="tick-line"></div>
+                        <div class="tick-label">Nov</div>
+                    </div>
+                    <div class="tick">
+                        <div class="tick-line"></div>
+                        <div class="tick-label">Dec</div>
+                    </div>
+                </div>
+            </div>
+
+            <svg class="occupancy_bubble" style="flex: 1;"></svg>
+        </div>
+
+        <!-- Row 2 -->
+        <div style="flex: 1; display: flex; flex-direction: row; padding-top: 2px;">
+
+            <!-- Left Col: Revenue vs Occupancy Scatter -->
+            <div style="flex: 1; display: flex; flex-direction: column; padding-right: 5px;">
+                <div class="chartHeader" style="padding: 15px; font-weight: bold;">Revenue vs Occupancy</div>
+                <div class="revenue_vsOccupancyScatter-container" style="position: relative;">
+                    <svg class="revenue_vsOccupancyScatter"></svg>
+                </div>
+            </div>
+
+            <!-- Right Col: Occupancy Line Chart -->
+            <div style="flex: 1; display: flex; flex-direction: column; padding-left: 5px;">
+                <div class="chartHeader" style="padding: 15px; font-weight: bold;">Occupancy Over Time</div>
+                <svg class="occupancy_line" style="flex: 1;"></svg>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        /// GET AND PREPROCESS DATA
+        // all chart codes must be able to import like this in html
+        import { loadData } from './dataset_processing.js';
+        import { revenueVsOccupancyScatter } from './revenue_vsOccupancyScatter.js';
+        import { occupancyLineChart } from './occupancy_line.js';
+        import { occupancyBubbleChart } from './occupancy_bubble.js';
+
+        var data = await loadData(false);
+        var data_geo = await loadData(true);
+
+        console.log(data[1]);
+        console.log(data_geo[1]);
+        console.log(data_geo.filter(d => d.unified_id === "AIR14124182"));
+
+        // Initial selection/drilldown
+        let selected_month = "Feb";
+        let selected_hostType = "All";
+
+
+        /// ANIMATION CONTROL ///
+        // Get unique host types
+        const hostTypes = Array.from(new Set(data.map(d => d.host_type))).sort();
+        hostTypes.unshift("All"); // Add "All" option at the top
+
+        // Put all host types into dropdown
+        const hostTypeSelector = document.getElementById("hostTypeSelect");
+        hostTypes.forEach(type => {
+            const option = document.createElement("option");
+            option.value = type;
+            option.textContent = type;
+            hostTypeSelector.appendChild(option);
+        });
+
+        // Set default host type to session storage or "All" if no session storage
+        const savedHostType = sessionStorage.getItem("hostType");
+        if (savedHostType && hostTypes.includes(savedHostType)) {
+            hostTypeSelector.value = savedHostType;
+            selected_hostType = savedHostType;
+        } else {
+            hostTypeSelector.value = "All";
+        }
+
+        // Store host type before going to next dashboard
+        window.gotoNewPage = function () {
+            const selectedHostType = document.getElementById("hostTypeSelect").value;
+            sessionStorage.setItem("hostType", selectedHostType);
+            window.location.href = 'index.html';
+        };
+
+        const monthSlider = document.getElementById("monthSlider");
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        // Function to filter data and render chart
+        function renderChartByHostType(selected_hostType, selected_month) {
+            // Note: selected_month is for the map only
+
+            const filteredData = selected_hostType === "All"
+                ? data
+                : data.filter(d => d.host_type === selected_hostType);
+
+            const filteredGeoData = selected_hostType === "All"
+                ? data_geo
+                : data_geo.filter(d => d.host_type === selected_hostType);
+
+            // Draw updated charts
+            revenueVsOccupancyScatter({
+                data: filteredGeoData,
+                svgClassName: ".revenue_vsOccupancyScatter", containerClassName: ".revenue_vsOccupancyScatter-container"
+            })
+            occupancyLineChart({ data: filteredGeoData, className: ".occupancy_line" });
+            occupancyBubbleChart({ data: filteredGeoData, className: ".occupancy_bubble", monthSelected: selected_month });
+        }
+
+        function renderChartByMonth(selected_hostType, selected_month) {
+            const filteredGeoData = selected_hostType === "All"
+                ? data_geo
+                : data_geo.filter(d => d.host_type === selected_hostType);
+
+            occupancyBubbleChart({
+                data: filteredGeoData, className: ".occupancy_bubble",
+                monthSelected: selected_month, selectedHostType: selected_hostType
+            });
+        }
+
+
+        // Initial render
+        if (savedHostType && hostTypes.includes(savedHostType)) {
+            renderChartByHostType(selected_hostType, selected_month);
+        }
+        else {
+            revenueVsOccupancyScatter({
+                data: data_geo,
+                svgClassName: ".revenue_vsOccupancyScatter", containerClassName: ".revenue_vsOccupancyScatter-container"
+            });
+
+            occupancyLineChart({ data: data_geo, className: ".occupancy_line" });
+            occupancyBubbleChart({
+                data: data_geo, className: ".occupancy_bubble",
+                monthSelected: selected_month, selectedHostType: selected_hostType
+            });
+        }
+
+        // Re-render when host type dropdown change
+        hostTypeSelector.addEventListener("change", () => {
+            selected_hostType = hostTypeSelector.value;
+            renderChartByHostType(selected_hostType, selected_month);
+        });
+
+        // Re-render when month slider change
+        monthSlider.addEventListener("input", () => {
+            selected_month = monthNames[monthSlider.value];
+            renderChartByMonth(selected_hostType, selected_month);
+        });
+    </script>
+</body>
